@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<title>Бүтээгдэхүүн — Үнийн сан</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f0f6ff;--surface:#fff;--surface2:#f7f9fc;--border:#e2e8f0;--accent:#0ea5e9;--accent2:#0284c7;--accent-bg:rgba(14,165,233,.08);--text:#0f172a;--text2:#475569;--text3:#94a3b8;--goods:#10b981;--goods-bg:rgba(16,185,129,.08);--open:#8b5cf6;--open-bg:rgba(139,92,246,.08);--mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}body{background:var(--bg);font-family:var(--sans);font-size:14px;color:var(--text)}
+.app{display:flex;flex-direction:column;min-height:100vh}
+header{border-bottom:1px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;gap:24px;background:rgba(255,255,255,.85);backdrop-filter:blur(16px);position:sticky;top:0;z-index:100}
+.logo{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--accent2);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;display:flex;align-items:center;gap:8px}
+.logo-dot{width:10px;height:10px;background:linear-gradient(135deg,var(--accent),#06b6d4);border-radius:50%}
+.nav{display:flex;gap:4px;margin-left:16px}
+.nav a{font-size:13px;font-weight:500;padding:8px 16px;border-radius:8px;text-decoration:none;color:var(--text3)}
+.nav a:hover{background:var(--surface2);color:var(--text)}
+.nav a.active{background:var(--accent-bg);color:var(--accent2);font-weight:600}
+.user-info{margin-left:auto;display:flex;align-items:center;gap:10px}
+.user-badge{font-size:12px;color:var(--accent2);background:var(--accent-bg);border:1px solid rgba(14,165,233,.15);border-radius:8px;padding:5px 12px}
+.logout-btn{font-size:12px;color:var(--text3);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 14px;cursor:pointer}
+.toolbar{padding:16px 32px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center}
+.search{flex:1;max-width:400px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 14px;outline:none;font-size:13px}
+.filter{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:12px}
+.cnt{font-size:12px;color:var(--text3);margin-left:auto}
+.embed-btn{background:#8b5cf6;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:600;padding:9px 16px;cursor:pointer}
+.table-wrap{flex:1;overflow:auto;background:var(--surface2)}
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2}
+th{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:13px 14px;text-align:left}
+tbody tr{background:var(--surface);border-bottom:1px solid var(--border);cursor:pointer}
+tbody tr:hover{background:#f0f9ff;box-shadow:inset 3px 0 0 var(--accent)}
+td{padding:13px 14px;font-size:13px}
+.td-mono{font-family:var(--mono);font-size:11px;color:var(--text3)}
+.badge{display:inline-flex;font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;background:var(--accent-bg);color:var(--accent2)}
+.range{font-family:var(--mono);font-size:11px;color:var(--text2)}
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.15);z-index:199;display:none;backdrop-filter:blur(3px)}
+.overlay.show{display:block}
+.panel{position:fixed;top:0;right:0;width:560px;height:100vh;background:var(--surface);border-left:1px solid var(--border);box-shadow:-8px 0 30px rgba(0,0,0,.06);z-index:200;transform:translateX(100%);transition:transform .3s;overflow-y:auto;padding:28px}
+.panel.open{transform:translateX(0)}
+.panel-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:var(--surface);cursor:pointer}
+.p-name{font-size:18px;font-weight:600;margin-bottom:6px;padding-right:40px}
+.p-meta{font-size:12px;color:var(--text3);margin-bottom:16px}
+.p-section{margin-bottom:16px}
+.p-section-title{font-size:11px;font-weight:600;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.p-row{display:flex;gap:10px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:4px;font-size:12px;align-items:center}
+.p-src{flex:1}
+.p-src .type{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:4px;margin-right:6px}
+.p-src .sup{background:var(--accent-bg);color:var(--accent2)}
+.p-src .own{background:var(--open-bg);color:var(--open)}
+.p-amt{font-family:var(--mono);font-weight:700}
+.p-date{color:var(--text3);font-family:var(--mono);font-size:10px}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <a class="logo" href="/"><div class="logo-dot"></div>ҮНИЙН САН</a>
+    <nav class="nav">
+      <a href="/">Нүүр</a><a href="/search">Хайлт</a><a href="/products" class="active">Бүтээгдэхүүн</a>
+      <a href="/categories">Ангилал</a><a href="/upload">Оруулах</a>
+    </nav>
+    <div class="user-info">
+      <span class="user-badge" id="ub"></span>
+      <button class="logout-btn" onclick="doLogout()">Гарах</button>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <input class="search" id="search" placeholder="Хайх... (бүтээгдэхүүний нэр)" oninput="debounce()">
+    <select class="filter" id="cat" onchange="load()"><option value="">Бүх ангилал</option></select>
+    <button class="embed-btn" onclick="embedAll()">🧠 Embed</button>
+    <span class="cnt" id="cnt"></span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Нэр</th><th>Ангилал</th><th>Төрөл</th><th>Нэгж</th>
+        <th>Үнэ №</th><th style="text-align:right">Хязгаар</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+<div class="panel" id="panel">
+  <button class="panel-close" onclick="closePanel()">✕</button>
+  <div id="panel-content"></div>
+</div>
+
+<script>
+let user = null;
+let timer = null;
+
+async function check() {
+  const r = await fetch('/api/me');
+  if (!r.ok) { location.href='/'; return; }
+  user = (await r.json()).user;
+  document.getElementById('ub').textContent = user.full_name;
+  await loadCats();
+  const urlCat = new URLSearchParams(location.search).get('category');
+  if (urlCat) document.getElementById('cat').value = urlCat;
+  load();
+}
+async function doLogout() { await fetch('/api/logout',{method:'POST'}); location.href='/'; }
+function debounce() { clearTimeout(timer); timer = setTimeout(load, 300); }
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+async function loadCats() {
+  const r = await fetch('/api/categories');
+  const cats = await r.json();
+  const sel = document.getElementById('cat');
+  cats.forEach(c => { sel.innerHTML += `<option value="${c.id}">${esc(c.name)} (${c.product_count})</option>`; });
+}
+
+async function load() {
+  const q = document.getElementById('search').value.trim();
+  const cat = document.getElementById('cat').value;
+  let url = '/api/products?limit=500';
+  if (q) url += `&search=${encodeURIComponent(q)}`;
+  if (cat) url += `&category_id=${cat}`;
+  const r = await fetch(url);
+  const data = await r.json();
+  document.getElementById('cnt').textContent = `${data.length} бүтээгдэхүүн`;
+  document.getElementById('tbody').innerHTML = data.map(p => {
+    const range = p.min_price ? `${Number(p.min_price).toLocaleString()} – ${Number(p.max_price).toLocaleString()}` : '—';
+    return `<tr onclick="openPanel(${p.id})">
+      <td style="font-weight:500;max-width:280px">${esc(p.name)}</td>
+      <td><span class="badge">${esc(p.category_name||'')}</span></td>
+      <td style="color:var(--text2);font-size:12px">${esc(p.type_name||'')}</td>
+      <td class="td-mono">${esc(p.unit||'')}</td>
+      <td class="td-mono" style="color:var(--accent2)">${p.price_count||0}</td>
+      <td style="text-align:right" class="range">${range}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function openPanel(id) {
+  const r = await fetch('/api/products/'+id);
+  const d = await r.json();
+  const prices = d.prices || [];
+
+  const priceHtml = prices.map(p => {
+    const cls = p.source_type === 'supplier' ? 'sup' : 'own';
+    const label = p.source_type === 'supplier' ? 'Нийл' : 'Манай';
+    const dt = p.price_date ? p.price_date.substring(0,10) : '';
+    const amt = p.unit_price ? Number(p.unit_price).toLocaleString('mn-MN') : '—';
+    return `<div class="p-row">
+      <div class="p-src"><span class="type ${cls}">${label}</span>${esc(p.source_name||'')}</div>
+      <span class="p-amt">${amt} ${esc(p.currency||'')}</span>
+      <span class="p-date">${dt}</span>
+    </div>`;
+  }).join('') || '<div style="color:var(--text3);font-size:12px;padding:10px">Үнэ байхгүй</div>';
+
+  document.getElementById('panel-content').innerHTML = `
+    <div class="p-name">${esc(d.name)}</div>
+    <div class="p-meta">${esc(d.category_name||'')} · ${esc(d.type_name||'')}</div>
+    <div class="p-section">
+      <div class="p-section-title">Үнэний жагсаалт (${prices.length})</div>
+      ${priceHtml}
+    </div>
+  `;
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closePanel() {
+  document.getElementById('panel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+async function embedAll() {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Embed...';
+  let total = 0;
+  while (true) {
+    const r = await fetch('/api/embed/batch', {method:'POST'});
+    const d = await r.json();
+    if (!d.processed || d.processed === 0) break;
+    total += d.processed;
+    btn.textContent = `Embed (${total})`;
+    if (d.remaining === 0) break;
+  }
+  btn.disabled = false;
+  btn.textContent = '🧠 Embed';
+  alert(`${total} бүтээгдэхүүн embed хийгдлээ`);
+}
+
+document.addEventListener('DOMContentLoaded', check);
+</script>
+</body>
+</html>

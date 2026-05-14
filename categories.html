@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<title>Ангилал — Үнийн сан</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f0f6ff;--surface:#fff;--surface2:#f7f9fc;--border:#e2e8f0;--accent:#0ea5e9;--accent2:#0284c7;--accent-bg:rgba(14,165,233,.08);--text:#0f172a;--text3:#94a3b8;--text2:#475569;--mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}body{background:var(--bg);font-family:var(--sans);font-size:14px;color:var(--text)}
+.app{display:flex;flex-direction:column;min-height:100vh}
+header{border-bottom:1px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;gap:24px;background:rgba(255,255,255,.85);backdrop-filter:blur(16px);position:sticky;top:0;z-index:100}
+.logo{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--accent2);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;display:flex;align-items:center;gap:8px}
+.logo-dot{width:10px;height:10px;background:linear-gradient(135deg,var(--accent),#06b6d4);border-radius:50%}
+.nav{display:flex;gap:4px;margin-left:16px}
+.nav a{font-size:13px;font-weight:500;padding:8px 16px;border-radius:8px;text-decoration:none;color:var(--text3)}
+.nav a:hover{background:var(--surface2);color:var(--text)}
+.nav a.active{background:var(--accent-bg);color:var(--accent2);font-weight:600}
+.user-info{margin-left:auto;display:flex;align-items:center;gap:10px}
+.user-badge{font-size:12px;color:var(--accent2);background:var(--accent-bg);border:1px solid rgba(14,165,233,.15);border-radius:8px;padding:5px 12px}
+.logout-btn{font-size:12px;color:var(--text3);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 14px;cursor:pointer}
+.content{flex:1;padding:28px 32px;max-width:1100px;margin:0 auto;width:100%}
+.page-title{font-size:22px;font-weight:700;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--text3);margin-bottom:20px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.cat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;text-decoration:none;color:inherit;transition:all .2s}
+.cat-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.cat-name{font-size:15px;font-weight:600;margin-bottom:4px}
+.cat-desc{font-size:11px;color:var(--text3);margin-bottom:10px;min-height:14px}
+.cat-stats{display:flex;gap:10px;font-family:var(--mono);font-size:11px;color:var(--text2)}
+.cat-stats .num{color:var(--accent2);font-weight:700}
+.types-section{margin-top:24px}
+.type-list{display:flex;flex-wrap:wrap;gap:6px}
+.type-chip{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;color:var(--text2)}
+@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <a class="logo" href="/"><div class="logo-dot"></div>ҮНИЙН САН</a>
+    <nav class="nav">
+      <a href="/">Нүүр</a><a href="/search">Хайлт</a><a href="/products">Бүтээгдэхүүн</a>
+      <a href="/categories" class="active">Ангилал</a><a href="/upload">Оруулах</a>
+    </nav>
+    <div class="user-info">
+      <span class="user-badge" id="ub"></span>
+      <button class="logout-btn" onclick="doLogout()">Гарах</button>
+    </div>
+  </header>
+  <div class="content">
+    <div class="page-title">Ангилал ба дэд төрлүүд</div>
+    <div class="page-sub">AI үүсгэсэн бүтээгдэхүүний ангилалын бүтэц</div>
+    <div class="grid" id="grid"></div>
+  </div>
+</div>
+
+<script>
+let user = null;
+async function check() {
+  const r = await fetch('/api/me');
+  if (!r.ok) { location.href='/'; return; }
+  user = (await r.json()).user;
+  document.getElementById('ub').textContent = user.full_name;
+  load();
+}
+async function doLogout() { await fetch('/api/logout',{method:'POST'}); location.href='/'; }
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+async function load() {
+  const [cr, tr] = await Promise.all([fetch('/api/categories'), fetch('/api/types')]);
+  const cats = await cr.json();
+  const types = await tr.json();
+
+  const typesByCat = {};
+  types.forEach(t => {
+    if (!typesByCat[t.category_id]) typesByCat[t.category_id] = [];
+    typesByCat[t.category_id].push(t);
+  });
+
+  document.getElementById('grid').innerHTML = cats.map(c => {
+    const tlist = (typesByCat[c.id] || []).map(t => `<span class="type-chip">${esc(t.name)} (${t.product_count})</span>`).join('');
+    return `<a class="cat-card" href="/products?category=${c.id}">
+      <div class="cat-name">${esc(c.name)}</div>
+      <div class="cat-desc">${esc(c.description||'')}</div>
+      <div class="cat-stats">
+        <span class="num">${c.product_count||0}</span> бүтээгдэхүүн
+      </div>
+      ${tlist ? `<div class="type-list" style="margin-top:10px">${tlist}</div>` : ''}
+    </a>`;
+  }).join('') || '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3)">Ангилал байхгүй. Excel оруулж эхлүүлнэ үү.</div>';
+}
+
+document.addEventListener('DOMContentLoaded', check);
+</script>
+</body>
+</html>

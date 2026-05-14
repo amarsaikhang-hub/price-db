@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<title>Excel оруулах — Үнийн сан</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f0f6ff;--surface:#fff;--surface2:#f7f9fc;--border:#e2e8f0;--accent:#0ea5e9;--accent2:#0284c7;--accent-bg:rgba(14,165,233,.08);--text:#0f172a;--text2:#475569;--text3:#94a3b8;--goods:#10b981;--goods-bg:rgba(16,185,129,.08);--compare:#f59e0b;--compare-bg:rgba(245,158,11,.08);--open:#8b5cf6;--danger:#ef4444;--mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}body{background:var(--bg);font-family:var(--sans);font-size:14px;color:var(--text)}
+.app{display:flex;flex-direction:column;min-height:100vh}
+header{border-bottom:1px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;gap:24px;background:rgba(255,255,255,.85);backdrop-filter:blur(16px);position:sticky;top:0;z-index:100}
+.logo{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--accent2);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;display:flex;align-items:center;gap:8px}
+.logo-dot{width:10px;height:10px;background:linear-gradient(135deg,var(--accent),#06b6d4);border-radius:50%}
+.nav{display:flex;gap:4px;margin-left:16px}
+.nav a{font-size:13px;font-weight:500;padding:8px 16px;border-radius:8px;text-decoration:none;color:var(--text3)}
+.nav a:hover{background:var(--surface2);color:var(--text)}
+.nav a.active{background:var(--accent-bg);color:var(--accent2);font-weight:600}
+.user-info{margin-left:auto;display:flex;align-items:center;gap:10px}
+.user-badge{font-size:12px;color:var(--accent2);background:var(--accent-bg);border:1px solid rgba(14,165,233,.15);border-radius:8px;padding:5px 12px}
+.logout-btn{font-size:12px;color:var(--text3);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 14px;cursor:pointer}
+.content{flex:1;padding:28px 32px;max-width:800px;margin:0 auto;width:100%}
+.page-title{font-size:22px;font-weight:700;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--text3);margin-bottom:20px}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px}
+.source-toggle{display:flex;gap:8px;margin-bottom:16px}
+.source-btn{flex:1;padding:14px;border:1px solid var(--border);border-radius:10px;background:var(--surface2);cursor:pointer;text-align:center;font-size:13px;font-weight:500;color:var(--text2)}
+.source-btn.active{background:var(--accent-bg);border-color:var(--accent);color:var(--accent2)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
+.field input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13px;outline:none}
+.drop{border:2px dashed #bae6fd;border-radius:12px;padding:36px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2);margin-bottom:14px}
+.drop:hover,.drop.drag-over{border-color:var(--accent);background:#f0f9ff}
+.drop-icon{font-size:36px;margin-bottom:10px}
+.file-info{font-family:var(--mono);font-size:12px;color:var(--accent2);margin-top:6px}
+.btn{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:600;padding:12px 24px;cursor:pointer;width:100%}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.loading{text-align:center;padding:30px;color:var(--text3)}
+.spinner{display:inline-block;width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err{font-size:12px;color:var(--danger);margin-top:10px;min-height:16px}
+
+.result{background:linear-gradient(135deg,rgba(16,185,129,.05),rgba(16,185,129,.02));border:1px solid rgba(16,185,129,.15);border-radius:12px;padding:18px 20px}
+.result h3{font-size:14px;font-weight:600;color:var(--goods);margin-bottom:10px}
+.result-row{display:flex;gap:16px;font-size:13px;margin-bottom:12px}
+.result-row span{color:var(--text3)}
+.result-row b{font-family:var(--mono);font-weight:700}
+.tag-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tag{font-size:11px;padding:3px 10px;border-radius:6px;background:var(--accent-bg);color:var(--accent2)}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <a class="logo" href="/"><div class="logo-dot"></div>ҮНИЙН САН</a>
+    <nav class="nav">
+      <a href="/">Нүүр</a><a href="/search">Хайлт</a><a href="/products">Бүтээгдэхүүн</a>
+      <a href="/categories">Ангилал</a><a href="/upload" class="active">Оруулах</a>
+    </nav>
+    <div class="user-info">
+      <span class="user-badge" id="ub"></span>
+      <button class="logout-btn" onclick="doLogout()">Гарах</button>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-title">Excel файл оруулах</div>
+    <div class="page-sub">AI файлыг шинжилж ангилал, төрөл, үнийг автомат санд хадгална</div>
+
+    <div class="card">
+      <div class="source-toggle">
+        <div class="source-btn active" onclick="setSrc('supplier',this)">🏢 Нийлүүлэгчийн үнэ</div>
+        <div class="source-btn" onclick="setSrc('own',this)">📝 Манай өгсөн үнэ</div>
+      </div>
+
+      <div class="field">
+        <label id="src-label">Нийлүүлэгч компанийн нэр</label>
+        <input id="source_name" placeholder="Жишээ: ABC LLC, XYZ Trading...">
+      </div>
+
+      <div class="drop" id="drop">
+        <div class="drop-icon">📊</div>
+        <div style="font-size:13px;color:var(--text2)">Excel файл чирж тавих эсвэл дарж сонгох</div>
+        <div class="file-info" id="file-info"></div>
+        <input type="file" id="file" accept=".xlsx,.xls" style="display:none">
+      </div>
+
+      <button class="btn" id="submit" onclick="submit()">AI шинжилгээ + оруулах</button>
+      <div class="err" id="err"></div>
+    </div>
+
+    <div class="loading" id="loading" style="display:none">
+      <div class="spinner"></div>
+      <div>AI файлыг шинжилж ангилал үүсгэж байна... Энэ 1-2 минут үргэлжилнэ.</div>
+    </div>
+
+    <div id="result" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+let src = 'supplier';
+let file = null;
+let user = null;
+
+async function check() {
+  const r = await fetch('/api/me');
+  if (!r.ok) { location.href='/'; return; }
+  user = (await r.json()).user;
+  document.getElementById('ub').textContent = user.full_name;
+}
+async function doLogout() { await fetch('/api/logout',{method:'POST'}); location.href='/'; }
+
+function setSrc(s, el) {
+  src = s;
+  document.querySelectorAll('.source-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('src-label').textContent = s==='supplier' ? 'Нийлүүлэгч компанийн нэр' : 'Өөрийн үнийн саналын нэр/тендер';
+}
+
+const dz = document.getElementById('drop');
+const fi = document.getElementById('file');
+dz.addEventListener('click', () => fi.click());
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); if(e.dataTransfer.files[0]) pick(e.dataTransfer.files[0]); });
+fi.addEventListener('change', e => { if(e.target.files[0]) pick(e.target.files[0]); });
+
+function pick(f) { file = f; document.getElementById('file-info').textContent = f.name + ' (' + (f.size/1024).toFixed(0) + ' KB)'; }
+
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+async function submit() {
+  const name = document.getElementById('source_name').value.trim();
+  const errEl = document.getElementById('err');
+  errEl.textContent = '';
+
+  if (!name) { errEl.textContent = 'Эх үүсвэр нэр оруулна уу'; return; }
+  if (!file) { errEl.textContent = 'Excel файл сонгоно уу'; return; }
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('source_type', src);
+  fd.append('source_name', name);
+
+  document.getElementById('submit').disabled = true;
+  document.getElementById('loading').style.display = '';
+  document.getElementById('result').style.display = 'none';
+
+  try {
+    const r = await fetch('/api/upload', {method:'POST', body:fd});
+    const d = await r.json();
+    document.getElementById('loading').style.display = 'none';
+
+    if (!r.ok) { errEl.textContent = d.error || 'Алдаа'; document.getElementById('submit').disabled = false; return; }
+
+    const cats = (d.categories || []).map(c => `<span class="tag">${esc(c)}</span>`).join('');
+    document.getElementById('result').innerHTML = `
+      <div class="result">
+        <h3>✓ Амжилттай оруулсан</h3>
+        <div class="result-row"><span>Нийт мөр:</span><b>${d.total}</b></div>
+        <div class="result-row"><span>Импорт:</span><b style="color:var(--goods)">${d.imported}</b></div>
+        <div style="font-size:12px;color:var(--text3);margin-top:12px">Үүсгэсэн ангилал:</div>
+        <div class="tag-group">${cats}</div>
+        <div style="margin-top:16px;font-size:12px;color:var(--text3)">
+          💡 Embedding хийхийн тулд: <code style="background:var(--surface2);padding:2px 6px;border-radius:4px">POST /api/embed/batch</code>-г хэд хэдэн удаа дуудна
+        </div>
+      </div>`;
+    document.getElementById('result').style.display = '';
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    errEl.textContent = 'Сервертэй холбогдож чадсангүй';
+  }
+  document.getElementById('submit').disabled = false;
+}
+
+document.addEventListener('DOMContentLoaded', check);
+</script>
+</body>
+</html>
